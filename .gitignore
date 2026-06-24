@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+.og-cache/
+dist/
+build/
+*.log
+.DS_Store
+.vite/
