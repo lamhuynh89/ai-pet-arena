@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const API_BASE = 'https://api.huynhduclam.xyz'
+
 const api = axios.create({
-  baseURL: '/api',   // proxied by Vite to backend :3002
+  baseURL: API_BASE,
   timeout: 20000,
 })
 
