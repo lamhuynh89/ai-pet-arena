@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-const API_BASE = 'https://api.huynhduclam.xyz'
+// Production default: https://api.huynhduclam.xyz
+// LOCAL dev only: set VITE_API_BASE= (empty) in .env to use relative + Vite proxy
+// Never hardcode relative '' as default (breaks prod deploys with separate API origin)
+const rawBase = import.meta.env.VITE_API_BASE
+const API_BASE = rawBase === '' ? '' : (rawBase || 'https://api.huynhduclam.xyz')
 
 const api = axios.create({
   baseURL: API_BASE,
