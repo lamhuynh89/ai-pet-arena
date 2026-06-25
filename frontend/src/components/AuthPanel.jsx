@@ -15,6 +15,10 @@ export default function AuthPanel({ onAuthSuccess, onSkip }) {
       setErr('username required')
       return
     }
+    if (mode === 'register' && !wallet.trim()) {
+      setErr('wallet address is required for Web3 ownership')
+      return
+    }
     setLoading(true)
     setErr('')
     try {
@@ -80,7 +84,7 @@ export default function AuthPanel({ onAuthSuccess, onSkip }) {
 
         {mode === 'register' && (
           <div style={{ marginBottom: 8 }}>
-            <label style={{ fontSize: 12, color: '#94a3b8' }}>WALLET (optional)</label>
+            <label style={{ fontSize: 12, color: '#94a3b8' }}>WALLET (required for Web3 ownership)</label>
             <input 
               value={wallet} 
               onChange={e => setWallet(e.target.value)} 
@@ -92,7 +96,7 @@ export default function AuthPanel({ onAuthSuccess, onSkip }) {
         )}
 
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          <button type="submit" disabled={loading || !username.trim()} style={{ flex: 1 }}>
+          <button type="submit" disabled={loading || !username.trim() || (mode === 'register' && !wallet.trim())} style={{ flex: 1 }}>
             {loading ? '...' : (mode === 'login' ? 'Login' : 'Register & Login')}
           </button>
           <button 
