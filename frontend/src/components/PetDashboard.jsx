@@ -136,7 +136,6 @@ export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoad
           />
         </div>
       </div>
-    </div>
 
       {!isOwned && token && (
         <div className="card" style={{ borderColor: '#f59e0b', background: '#1a2336' }}>
