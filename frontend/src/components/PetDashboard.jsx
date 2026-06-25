@@ -34,7 +34,7 @@ function PetFace({ personality }) {
   )
 }
 
-export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoading, setError }) {
+export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoading, setError, token, isOwned }) {
   if (!pet) return null
 
   const { name, personality, stats = {} } = pet
@@ -108,6 +108,8 @@ export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoad
             onUpdate={onUpdate} 
             setLoading={setLoading}
             setError={setError}
+            token={token}
+            isOwned={isOwned}
           />
         </div>
         
@@ -119,6 +121,8 @@ export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoad
             loading={loading}
             setLoading={setLoading}
             setError={setError}
+            token={token}
+            isOwned={isOwned}
           />
           
           <BattleArena 
@@ -127,9 +131,18 @@ export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoad
             onUpdate={onUpdate} 
             setLoading={setLoading}
             setError={setError}
+            token={token}
+            isOwned={isOwned}
           />
         </div>
       </div>
+    </div>
+
+      {!isOwned && token && (
+        <div className="card" style={{ borderColor: '#f59e0b', background: '#1a2336' }}>
+          <strong>🔒 Read-only view.</strong> Claim pet via box above to unlock Chat / Feed / Train / Battle.
+        </div>
+      )}
     </div>
   )
 }

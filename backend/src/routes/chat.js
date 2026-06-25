@@ -2,12 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { generatePetResponse, applyStatDecay } = require('../services/aiPet');
 const { loadPet, savePet } = require('../services/petModel');
+const { isOwner } = require('../services/authService');
 
 router.post('/', async (req, res) => {
   try {
-    const { rootHash, message } = req.body;
+    const { rootHash, message, token } = req.body;
     if (!rootHash || !message) {
       return res.status(400).json({ error: 'rootHash and message required' });
+    }
+
+    if (!token || !isOwner(token, rootHash)) {
+      return res.status(403).json({ error: 'ownership required. Register, login, and claim pet first' });
     }
 
     let pet = await loadPet(rootHash);

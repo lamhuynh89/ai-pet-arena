@@ -7,7 +7,7 @@ const DEFAULT_PERSONALITIES = [
   { key: 'lazy', name: 'Lazy', emoji: '🦥', traits: 'Sleepy & slow', color: '#a78bfa' }
 ]
 
-export default function PetCreator({ onCreate, loading, personalities }) {
+export default function PetCreator({ onCreate, loading, personalities, isLoggedIn }) {
   const [name, setName] = useState('')
   const [personality, setPersonality] = useState('playful')
 
@@ -74,6 +74,7 @@ export default function PetCreator({ onCreate, loading, personalities }) {
 
       <div style={{ marginTop: 14, padding: 11, background: '#0f1525', borderRadius: 10, fontSize: 11.5, color: '#64748b' }}>
         📦 Saved to decentralized 0G Storage. Keep the root hash to reload later.
+        {isLoggedIn && <div style={{marginTop:4, color:'#22c55e'}}>✓ Will auto-claim to your account</div>}
       </div>
     </div>
   )

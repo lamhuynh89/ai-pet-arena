@@ -2,11 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { feedPet, trainPet, battle } = require('../services/aiPet');
 const { loadPet, savePet } = require('../services/petModel');
+const { isOwner } = require('../services/authService');
 
 router.post('/feed', async (req, res) => {
   try {
-    const { rootHash } = req.body;
+    const { rootHash, token } = req.body;
     if (!rootHash) return res.status(400).json({ error: 'rootHash required' });
+
+    // Ownership enforcement: require valid token + owner for protected action
+    if (!token || !isOwner(token, rootHash)) {
+      return res.status(403).json({ error: 'ownership required. Register, login, and claim pet first' });
+    }
 
     let pet = await loadPet(rootHash);
     const result = feedPet(pet);
@@ -26,8 +32,12 @@ router.post('/feed', async (req, res) => {
 
 router.post('/train', async (req, res) => {
   try {
-    const { rootHash } = req.body;
+    const { rootHash, token } = req.body;
     if (!rootHash) return res.status(400).json({ error: 'rootHash required' });
+
+    if (!token || !isOwner(token, rootHash)) {
+      return res.status(403).json({ error: 'ownership required. Register, login, and claim pet first' });
+    }
 
     let pet = await loadPet(rootHash);
     const result = trainPet(pet);
@@ -47,8 +57,12 @@ router.post('/train', async (req, res) => {
 
 router.post('/battle', async (req, res) => {
   try {
-    const { rootHash } = req.body;
+    const { rootHash, token } = req.body;
     if (!rootHash) return res.status(400).json({ error: 'rootHash required' });
+
+    if (!token || !isOwner(token, rootHash)) {
+      return res.status(403).json({ error: 'ownership required. Register, login, and claim pet first' });
+    }
 
     let pet = await loadPet(rootHash);
     const result = battle(pet);   // vs built-in sample opponent

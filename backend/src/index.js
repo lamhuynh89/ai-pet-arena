@@ -9,6 +9,7 @@ const path = require('path');
 const petsRouter = require('./routes/pets');
 const chatRouter = require('./routes/chat');
 const actionsRouter = require('./routes/actions');
+const authRouter = require('./routes/auth');
 
 const { initStorage } = require('./services/ogStorage');
 
@@ -30,6 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use('/auth', authRouter);
 app.use('/pets', petsRouter);
 app.use('/chat', chatRouter);
 app.use('/actions', actionsRouter);

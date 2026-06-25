@@ -7,33 +7,62 @@ const api = axios.create({
   timeout: 20000,
 })
 
-export async function createPet(name, personality) {
-  const { data } = await api.post('/pets/create', { name, personality })
+// AUTH
+
+export async function register(username, password = null, wallet = null) {
+  const { data } = await api.post('/auth/register', { username, password, wallet })
   return data
 }
 
-export async function loadPet(rootHash) {
-  const { data } = await api.get(`/pets/load/${rootHash}`)
+export async function login(username, password = null) {
+  const { data } = await api.post('/auth/login', { username, password })
   return data
 }
 
-export async function sendChat(rootHash, message) {
-  const { data } = await api.post('/chat', { rootHash, message })
+export async function claimPet(token, rootHash) {
+  const { data } = await api.post('/auth/claim', { token, rootHash })
   return data
 }
 
-export async function feed(rootHash) {
-  const { data } = await api.post('/actions/feed', { rootHash })
+export async function getMyPets(token) {
+  const { data } = await api.get('/auth/mypets', { params: { token } })
   return data
 }
 
-export async function train(rootHash) {
-  const { data } = await api.post('/actions/train', { rootHash })
+export async function getMe(token) {
+  const { data } = await api.get('/auth/me', { params: { token } })
   return data
 }
 
-export async function battle(rootHash) {
-  const { data } = await api.post('/actions/battle', { rootHash })
+// PETS - updated to support token for auto-claim + owned flag
+export async function createPet(name, personality, token = null) {
+  const { data } = await api.post('/pets/create', { name, personality, token })
+  return data
+}
+
+export async function loadPet(rootHash, token = null) {
+  const config = token ? { params: { token } } : {}
+  const { data } = await api.get(`/pets/load/${rootHash}`, config)
+  return data
+}
+
+export async function sendChat(rootHash, message, token) {
+  const { data } = await api.post('/chat', { rootHash, message, token })
+  return data
+}
+
+export async function feed(rootHash, token) {
+  const { data } = await api.post('/actions/feed', { rootHash, token })
+  return data
+}
+
+export async function train(rootHash, token) {
+  const { data } = await api.post('/actions/train', { rootHash, token })
+  return data
+}
+
+export async function battle(rootHash, token) {
+  const { data } = await api.post('/actions/battle', { rootHash, token })
   return data
 }
 
@@ -58,5 +87,10 @@ export default {
   feed,
   train,
   battle,
-  getPersonalities
+  getPersonalities,
+  register,
+  login,
+  claimPet,
+  getMyPets,
+  getMe
 }

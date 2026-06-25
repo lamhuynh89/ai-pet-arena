@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import api from '../services/api'
 
-export default function ChatWindow({ pet, rootHash, onUpdate, setLoading, setError }) {
+export default function ChatWindow({ pet, rootHash, onUpdate, setLoading, setError, token, isOwned = false }) {
   const [input, setInput] = useState('')
   const [log, setLog] = useState([
     { type: 'ai', text: `Hello! I'm ${pet.name}. (${pet.personality})` }
@@ -18,13 +18,13 @@ export default function ChatWindow({ pet, rootHash, onUpdate, setLoading, setErr
     setError('')
 
     try {
-      const res = await api.sendChat(rootHash, userMsg)
+      const res = await api.sendChat(rootHash, userMsg, token)
       if (res.success) {
         setLog(l => [...l, { type: 'ai', text: res.reply }])
         onUpdate(res.pet, res.rootHash)
       }
     } catch (e) {
-      setError('Chat failed: ' + e.message)
+      setError('Chat failed: ' + (e.response?.data?.error || e.message))
     }
     setLoading(false)
   }
@@ -48,13 +48,15 @@ export default function ChatWindow({ pet, rootHash, onUpdate, setLoading, setErr
           onChange={e => setInput(e.target.value)}
           placeholder={`Talk to ${pet.name}...`}
           style={{ flex: 1 }}
-          disabled={!rootHash}
+          disabled={!rootHash || !token || !isOwned}
         />
-        <button type="submit" disabled={!input.trim()}>Send</button>
+        {token && !isOwned && <span style={{fontSize:11, color:'#f59e0b', alignSelf:'center'}}>claim needed</span>}
+        <button type="submit" disabled={!input.trim() || !token || !isOwned}>Send</button>
       </form>
       
       <div className="helper-text">
         AI replies adapt to {pet.personality} personality.
+        {!isOwned && <span style={{color:'#f59e0b'}}> — Claim to unlock chat</span>}
       </div>
     </div>
   )
