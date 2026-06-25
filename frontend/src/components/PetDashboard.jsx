@@ -144,5 +144,5 @@ export default function PetDashboard({ pet, rootHash, onUpdate, loading, setLoad
         </div>
       )}
     </div>
-  )
+  );
 }
