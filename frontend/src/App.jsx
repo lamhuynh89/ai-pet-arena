@@ -11,6 +11,7 @@ function App() {
   const [owned, setOwned] = useState(false) // true if current pet claimed by logged user
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [personalities, setPersonalities] = useState([])
 
   // Auth state
@@ -19,6 +20,9 @@ function App() {
   const [myPets, setMyPets] = useState([])
 
   const [showAuth, setShowAuth] = useState(false)
+
+  // Claim input (controlled for feedback)
+  const [claimInput, setClaimInput] = useState('')
 
   useEffect(() => {
     // Restore auth
@@ -58,6 +62,7 @@ function App() {
     const t = tokenOverride !== null ? tokenOverride : authToken
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const data = await api.loadPet(hash, t)
       if (data.pet) {
@@ -76,6 +81,7 @@ function App() {
   async function handleCreate(name, personality) {
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const res = await api.createPet(name, personality, authToken)
       if (res.success) {
@@ -104,15 +110,21 @@ function App() {
     }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const res = await api.claimPet(authToken, rootHashToClaim)
       if (res.success) {
-        setError('')
+        setSuccess('Pet claimed successfully! \u2705')
         await refreshMyPets()
         if (rootHash === rootHashToClaim) {
           setOwned(true)
         }
-        await loadExistingPet(rootHashToClaim)
+        // load to refresh UI/owned - tolerate failure (claim already succeeded)
+        try { await loadExistingPet(rootHashToClaim) } catch {}
+        // clear claim input on success
+        setClaimInput('')
+        // auto-clear success after 3s
+        setTimeout(() => setSuccess(''), 3000)
       } else {
         setError(res.error || 'Claim failed')
       }
@@ -157,11 +169,21 @@ function App() {
     setAuthUser(user || { username: 'user' })
     setShowAuth(false)
     refreshMyPets(token)
-    // if a pet is loaded and not yet owned, auto-claim
+    // if a pet is loaded and not yet owned, auto-claim with feedback
     if (rootHash && !owned) {
+      setLoading(true)
+      setError('')
+      setSuccess('')
       api.claimPet(token, rootHash).then((r) => {
-        if (r && r.success) { setOwned(true); refreshMyPets(token) }
-      }).catch(() => {})
+        if (r && r.success) {
+          setOwned(true)
+          setSuccess('Pet auto-claimed on login \u2705')
+          refreshMyPets(token)
+          setTimeout(() => setSuccess(''), 2500)
+        }
+      }).catch((e) => {
+        // silent fail on auto, user can manual claim
+      }).finally(() => setLoading(false))
     }
   }
 
@@ -215,6 +237,12 @@ function App() {
         </div>
       )}
 
+      {success && (
+        <div className="card" style={{ background: '#052e16', borderColor: '#22c55e', color: '#86efac' }}>
+          {success}
+        </div>
+      )}
+
       {showAuth && !authToken && (
         <AuthPanel onAuthSuccess={handleAuthSuccess} onSkip={handleSkipAuth} />
       )}
@@ -257,25 +285,23 @@ function App() {
           <div style={{ fontSize: 13, marginBottom: 8, fontWeight: 600 }}>⚖️ Claim Pet by rootHash</div>
           <div style={{ display: 'flex', gap: 8 }}>
             <input
-              id="claim-input"
+              value={claimInput}
+              onChange={e => setClaimInput(e.target.value)}
               placeholder="0x1234... paste rootHash"
               style={{ flex: 1, fontFamily: 'monospace', fontSize: 13 }}
+              disabled={loading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  const val = e.target.value.trim()
-                  if (val) handleManualClaim(val)
+                  if (claimInput.trim()) handleManualClaim(claimInput)
                 }
               }}
             />
             <button
-              onClick={() => {
-                const inp = document.getElementById('claim-input')
-                if (inp && inp.value.trim()) handleManualClaim(inp.value)
-              }}
-              disabled={loading}
+              onClick={() => claimInput.trim() && handleManualClaim(claimInput)}
+              disabled={loading || !claimInput.trim()}
               style={{ background: '#f59e0b', whiteSpace: 'nowrap' }}
             >
-              Claim
+              {loading ? 'Claiming...' : 'Claim'}
             </button>
           </div>
           <div className="helper-text" style={{ marginTop: 6 }}>Paste any 0G rootHash to own it and unlock full Chat/Actions.</div>
@@ -290,7 +316,7 @@ function App() {
       )}
       {authToken && rootHash && !owned && (
         <button onClick={() => handleClaim(rootHash)} disabled={loading} style={{ background: '#f59e0b', marginBottom: 12 }}>
-          Claim Current ({rootHash.slice(0,14)}…)
+          {loading ? 'Claiming...' : `Claim Current (${rootHash.slice(0,14)}…)`}
         </button>
       )}
 
@@ -308,7 +334,7 @@ function App() {
 
             {authToken && rootHash && !owned && (
               <button onClick={() => handleClaim(rootHash)} disabled={loading} style={{ background: '#f59e0b' }}>
-                Claim this pet
+                {loading ? 'Claiming...' : 'Claim this pet'}
               </button>
             )}
 
